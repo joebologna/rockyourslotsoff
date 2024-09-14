@@ -1,9 +1,0 @@
-# Concept and purpose of the series
-
-# First in the series: A simple web page with data generated continuously
-
-# Portable Technology: Go vs. C/C++
-
-# Ask Chat GPT-4o to Generate the Go Lang Program show it Running
-
-# Ask Chat GPT-4o to Generate the C/C++ Program Show it Running
