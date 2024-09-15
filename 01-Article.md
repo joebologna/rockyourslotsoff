@@ -55,7 +55,7 @@ Creating a mobile application is a real pain. iOS and Android are fundamentally 
 
 The simplest way for me to give you code to use on a mobile device is to use Pythonista for iOS. Sorry Android users, feel free to write your own client. Install the Pythonista on your iOS device and you'll be able to run the Python code I supply. Pythonista cost $9.99 (one time), so you'll need to make a small investment to use it. I promise it's worth it's weight in gold. You'll learn Python 3.10 in the process.
 
-## Selecting a Persistent Storage for the Server
+## Selecting Persistent Storage for the Server
 
 I'll get to the overall architecture in a minute, but obviously we need some way to persist data. All services require some form of configuration data and user data. Persistence is required when making updates to the binary providing the service because it will restart. Keeping user data safe and dealing with changes to configuration or user data data structures is important.
 
@@ -240,17 +240,22 @@ This gives a pretty good idea of what it will take to create a prototype. This i
 
 I don't know how to teach estimation quickly, so I'll just take an educated guess and assume you've done some development on the computer you have already. VS Code is installed and native compilers are available. This is different for Linux, Windows and MacOS. I have this all setup on MacOS, so I'm assuming this.
 
-| Task                                                                                                                                                                         | Effort (hrs) |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| Setup dev environment for Go, C++ and VS Code                                                                                                                                | 1            |
-| Write slot machine "business logic" using TDD                                                                                                                                | 3            |
-| Create API to use slot machine business logic                                                                                                                                | 2            |
-| Create a simple web page to:<br>Start with fake money, button to push, display results and reset progress<br>Assume DIVs will be updated from the server to display progress | 3            |
-| Write design the API to invoke the business logic using using a websocket.<br>Assume the messages "reset and spin" are all that is needed                                    | 2            |
-| Write the code to format the web page and update the "divs" when a "display" message is received over the websocket                                                          | 3            |
-| Total Effort                                                                                                                                                                 | 14           |
+| Task                                                 | Effort |
+| ---------------------------------------------------- | ------ |
+| Setup dev environment for Go, C++ and VS Code        | 1      |
+| Write slot machine "business logic" using TDD        | 3      |
+| Create API to use slot machine business logic        | 2      |
+| Create a simple web page[1]                          | 3      |
+| Write design the API to invoke the business logic[2] | 2      |
+| Write the code to format the web page                | 2      |
+| Write code to display msg from server[3]             | 3      |
+| Total Effort                                         | 16     |
 
-14 hours seems like a lot. We can try doing some of the work to get a better estimate. Using AI and other techniques I'll bet starting the process will result in a good frame work in about 4 hours and the actual implementation will be less than 8. This is 12 hours of which 8 hours is spent writing code for Alpha testing.
+[1] Start with fake money, button to push, display results and reset progress. Assume DIVs will be updated from the server to display progress.
+[2] Use a websocket for messages. Assume the messages "reset and spin" are all that is needed.
+[3] When a "display" message is received over the websocket update the "divs".
+
+16 hours seems like a lot. We can try doing some of the work to get a better estimate. Using AI and other techniques I'll bet starting the process will result in a good framework in about 4 hours and the actual implementation will be less than 8. This is 12 hours of which 8 hours is spent writing code for Alpha testing.
 
 ## Setting Expectations
 
