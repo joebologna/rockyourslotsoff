@@ -245,17 +245,17 @@ I don't know how to teach estimation quickly, so I'll just take an educated gues
 | Setup dev environment for Go, C++ and VS Code        | 1      |
 | Write slot machine "business logic" using TDD        | 3      |
 | Create API to use slot machine business logic        | 2      |
-| Create a simple web page[1]                          | 3      |
-| Write design the API to invoke the business logic[2] | 2      |
+| Create a simple web page<sup>[1]</sup>                          | 3      |
+| Write design the API to invoke the business logic<sup>[2]</sup> | 2      |
 | Write the code to format the web page                | 2      |
-| Write code to display msg from server[3]             | 3      |
+| Write code to display msg from server<sup>[3]</sup>             | 3      |
 | Total Effort                                         | 16     |
 
-[1] Start with fake money, button to push, display results and reset progress. Assume DIVs will be updated from the server to display progress.
-[2] Use a websocket for messages. Assume the messages "reset and spin" are all that is needed.
-[3] When a "display" message is received over the websocket update the "divs".
+<sup>[1]</sup> Start with fake money, button to push, display results and reset progress. Assume DIVs will be updated from the server to display progress.<br>
+<sup>[2]</sup> Use a websocket for messages. Assume the messages "reset and spin" are all that is needed.<br>
+<sup>[3]</sup> When a "display" message is received over the websocket update the "divs".
 
-16 hours seems like a lot. We can try doing some of the work to get a better estimate. Using AI and other techniques I'll bet starting the process will result in a good framework in about 4 hours and the actual implementation will be less than 8. This is 12 hours of which 8 hours is spent writing code for Alpha testing.
+16 hours seems like a lot. We can try doing some of the work to get a better estimate. By using AI and other techniques I'll bet starting the process will result in a good framework in about 4 hours and the actual implementation will be less than 8. This is 12 hours of which 8 hours is spent writing code for Alpha testing.
 
 ## Setting Expectations
 
