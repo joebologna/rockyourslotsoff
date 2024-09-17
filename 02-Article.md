@@ -6,6 +6,8 @@ Let's get started on the tasks listed in the estimate.
 
 # Setup Development Environment
 
+We'll setup a repository, compilers and IDE in the sections below. You may need to install Xcode command line tools first.
+
 ### Clone/Create Repository
 
 First, we need a directory and initialize it as a Git repository. If you intend to use GitHub or Bitbucket, it's easiest to create a repository in the cloud and clone it locally. I'll skip the Git tutorial and assume you've created a directory and that has been initialized. If you wish, you can just clone this repository and use it:
@@ -126,12 +128,11 @@ Process 48928 has exited with status 0
 Detaching
 ```
 
-### Setup C++ Workspace
+### Setup The C++ Workspace
 
 VSCode really likes to use workspaces, especially for Go. The simplest way to setup a workspace is to just create a hello.go program, open the directory in VSCode and use the menu options `File/Save Workspace As...` function.
 
 ```go
-cd -
 cat <<\EOF >src/Cpp/main.cpp
 #include <iostream>
 
@@ -207,6 +208,11 @@ Let's run it:
 
 ```console
 ./HelloWorld
+```
+
+Output:
+
+```console
 Hello World!
 ```
 
@@ -214,7 +220,7 @@ We're all setup to start writing some code or are we?
 
 ### Using TDD with Go
 
-As I'm mentioned we'll be using Test Driven Development (TDD). If you want to get formally trained in the process you can find a lot of material. For now, we'll just be pragmatic about it.
+As I mentioned we'll be using Test Driven Development (TDD). If you want to get formally trained in the process you can find a lot of material. For now, we'll just be pragmatic about it.
 
 TDD is all about building stuff in small increments. If you have studied `Software Craftsmanship`, as taught by **Uncle Bob** for decades, you'll be well prepared. He's easy to find on YouTube, for example [Uncle Bob on TDD](https://youtu.be/GvAzrC6-spQ). James Grenning has a very comprehensive training program and some [YouTube videos of workshops he's given](https://www.youtube.com/results?search_query=james+grenning+tdd).
 
@@ -526,7 +532,28 @@ ok      slots/vslot     0.340s
 
 ### Flesh Out Full Functionality using TDD with C++
 
-Let's use a similar strategy for C++.
+Let's use a similar strategy for C++. Start by setting the contents of vslot.cpp to the following:
+
+```
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+#include <array>
+#include <cstdlib>
+
+std::array<int, 3> spin(unsigned int seed) {
+  std::srand(seed);
+  return {int((std::rand() % 10) + 1), int((std::rand() % 10) + 1), int((std::rand() % 10) + 1)};
+}
+
+TEST_CASE("check if spin worked") {
+  std::srand(0);
+  std::array<int, 3> expected = {int((std::rand() % 10) + 1), int((std::rand() % 10) + 1), int((std::rand() % 10) + 1)};
+  std::array<int, 3> result = spin(0);
+  CHECK(result == expected);
+}
+```
+
+Run the test:
 
 ```console
 cd build; make; ctest; cd ..
@@ -535,13 +562,21 @@ cd build; make; ctest; cd ..
 Output:
 
 ```console
+-- File already exists: /Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp/doctest.h
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp/build
+[ 50%] Built target HelloWorld
+[ 75%] Building CXX object tests/CMakeFiles/test_vslot.dir/__/vslot.cpp.o
+[100%] Linking CXX executable test_vslot
+[100%] Built target test_vslot
 Test project /Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp/build
     Start 1: TestSpin
-1/1 Test #1: TestSpin .........................   Passed    0.00 sec
+1/1 Test #1: TestSpin .........................   Passed    0.28 sec
 
 100% tests passed, 0 tests failed out of 1
 
-Total Test time (real) =   0.01 sec
+Total Test time (real) =   0.28 sec
 ```
 
 # Summary
