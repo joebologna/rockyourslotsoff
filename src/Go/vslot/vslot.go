@@ -4,7 +4,7 @@ import "math/rand"
 
 // VSlot interface defines the required methods for implementing a virtual slot machine.
 type VSlot interface {
-	Spin(seed int64) [3]int   // Spin accepts a seed and returns a slice of ints
+	Spin() [3]int             // Spin accepts a seed and returns a slice of ints
 	Reset()                   // Reset resets the spinner's state
 	UpdateBalance(amount int) // UpdateBalance updates the balance by the given amount
 	GetBalance() int          // GetBalance returns the current balance
@@ -18,10 +18,15 @@ type MyVSlot struct {
 // Ensure MySpinner implements the Spinner interface.
 var _ VSlot = (*MyVSlot)(nil) // This line enforces the implementation at compile time.
 
-// Spin generates a slice of random integers based on the seed.
-func (s *MyVSlot) Spin(seed int64) [3]int {
-	// Example implementation: generate a slice of integers based on the seed
+func NewMyVSlot(seed int64) *MyVSlot {
+	m := MyVSlot{}
+	m.balance = 0
 	rand.Seed(seed)
+	return &m
+}
+
+// Spin generates a slice of random integers based on the seed.
+func (s *MyVSlot) Spin() [3]int {
 	return [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
 }
 

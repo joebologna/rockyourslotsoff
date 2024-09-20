@@ -1,2 +1,2 @@
 add_executable(test_vslot ../vslot.cpp)
-add_test(NAME TestSpin COMMAND test_vslot)
+add_test(NAME "MyVSlotTest" COMMAND test_vslot)

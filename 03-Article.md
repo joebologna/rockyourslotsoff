@@ -148,7 +148,7 @@ As an aside, you can write your own code generators in Go easily. This is becaus
 
 Let's pawn this off on our pair programmer :)
 
-#### ChatGPT Interaction to Generate the Interface
+#### ChatGPT Interaction to Generate the Go Interface
 
 Prompts:
 
@@ -272,6 +272,359 @@ Noodle... oh, crap. Globals are fine in Go tests, but `rand.Intn(10)` is called 
 
 Thinking about this further, it seems initializing the random number generator should be more controlled to avoid this from creeping in at a later date. It's likely that at some time in the future the code will be modified by someone who is not using TDD, not running the unit tests or future units tests are flawed. So we should consider adding some protections. For now, let's just put it on the list. We can do this using `// REVIEW` in the code, my handy Todo+ extension will flag it.
 
-### Using Globals in Go Tests
+We'll also likely need to use globals, in the tests. This should be done with care. We will use a `TestMain()` function to accomplish this.
 
-This should be done with care. We will use a `TestMain()` function to accomplish this.
+### Refactored Go Code
+
+At this point, it was time to reconsider what I'd done thus far. I concluded that a refactor was needed. After trying a few things to get the tests to work, it became obvious that I'd neglected to create a "New" function to create a MyVSlot object. So, I refactored by hand (instead of using AI).
+
+This is the result:
+
+**vslot/vslot.go**
+
+```go
+package vslot
+
+import "math/rand"
+
+// VSlot interface defines the required methods for implementing a virtual slot machine.
+type VSlot interface {
+	Spin() [3]int             // Spin accepts a seed and returns a slice of ints
+	Reset()                   // Reset resets the spinner's state
+	UpdateBalance(amount int) // UpdateBalance updates the balance by the given amount
+	GetBalance() int          // GetBalance returns the current balance
+}
+
+// MyVSlot struct implements the Spinner interface.
+type MyVSlot struct {
+	balance int
+}
+
+// Ensure MySpinner implements the Spinner interface.
+var _ VSlot = (*MyVSlot)(nil) // This line enforces the implementation at compile time.
+
+func NewMyVSlot(seed int64) *MyVSlot {
+	m := MyVSlot{}
+	m.balance = 0
+	rand.Seed(seed)
+	return &m
+}
+
+// Spin generates a slice of random integers based on the seed.
+func (s *MyVSlot) Spin() [3]int {
+	return [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
+}
+
+// Reset resets the spinner's state.
+func (s *MyVSlot) Reset() {
+	s.balance = 0 // Reset balance to 0
+}
+
+// UpdateBalance updates the balance by the given amount.
+func (s *MyVSlot) UpdateBalance(amount int) {
+	s.balance += amount
+}
+
+// GetBalance returns the current balance.
+func (s *MyVSlot) GetBalance() int {
+	return s.balance
+}
+```
+
+**vslot/vslot_test.go**
+
+```go
+package vslot
+
+import (
+	"flag"
+	"math/rand"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+var (
+	spin0, spin1 [3]int
+	myVSlot      *MyVSlot
+)
+
+// might need to run with -parallel=1
+func TestMain(m *testing.M) {
+	flag.Parse()
+	setup()
+
+	code := m.Run()
+
+	// teardown()
+
+	os.Exit(code)
+}
+
+func setup() {
+	myVSlot = NewMyVSlot(0)
+	spin0 = [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
+	spin1 = [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
+}
+
+func TestSpin(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot = NewMyVSlot(0)
+
+	spin_result := myVSlot.Spin()
+	a.Equal(spin0, spin_result)
+}
+
+func TestTwoSpins(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot = NewMyVSlot(0)
+
+	spin_result := myVSlot.Spin()
+	a.Equal(spin0, spin_result)
+
+	spin_result = myVSlot.Spin()
+	a.Equal(spin1, spin_result)
+}
+
+func TestBalance(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot = NewMyVSlot(0)
+	a.Equal(myVSlot.GetBalance(), 0)
+
+	spin_result := myVSlot.Spin()
+	a.Equal(spin0, spin_result)
+
+	myVSlot.UpdateBalance(10)
+	a.Equal(10, myVSlot.GetBalance())
+}
+
+func TestReset(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot = NewMyVSlot(0)
+	a.Equal(myVSlot.GetBalance(), 0)
+
+	spin_result := myVSlot.Spin()
+	a.Equal(spin0, spin_result)
+
+	myVSlot.UpdateBalance(10)
+	a.Equal(10, myVSlot.GetBalance())
+
+	myVSlot.Reset()
+	a.Equal(0, myVSlot.GetBalance())
+}
+```
+
+Let's run the tests and check code coverage:
+
+```console
+go test -cover
+```
+
+Output:
+
+```console
+PASS
+coverage: 100.0% of statements
+ok  	slots/vslot	0.447s
+```
+
+Yeah! We now have a functional vslot package.
+
+#### ChatGPT Interaction to Generate the C++ Code
+
+Let's try to get ChatGPT to do this for us. Maybe it will just rewrite the Go code.
+
+Prompt: convert this code to C++:
+
+_paste vslot/vslot.go here_
+
+Response: Here's the equivalent C++ code for your Go implementation:
+
+```c++
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <array>
+
+// VSlot interface defines the required methods for implementing a virtual slot machine.
+class VSlot {
+public:
+    virtual std::array<int, 3> Spin() = 0;             // Spin generates a slice of random integers
+    virtual void Reset() = 0;                          // Reset resets the spinner's state
+    virtual void UpdateBalance(int amount) = 0;        // UpdateBalance updates the balance by the given amount
+    virtual int GetBalance() const = 0;                // GetBalance returns the current balance
+    virtual ~VSlot() = default;                        // Virtual destructor for proper cleanup
+};
+
+// MyVSlot class implements the VSlot interface.
+class MyVSlot : public VSlot {
+private:
+    int balance;
+
+public:
+    MyVSlot(int64_t seed) : balance(0) {
+        std::srand(seed);
+    }
+
+    std::array<int, 3> Spin() override {
+        return {std::rand() % 10 + 1, std::rand() % 10 + 1, std::rand() % 10 + 1};
+    }
+
+    void Reset() override {
+        balance = 0; // Reset balance to 0
+    }
+
+    void UpdateBalance(int amount) override {
+        balance += amount;
+    }
+
+    int GetBalance() const override {
+        return balance;
+    }
+};
+
+int main() {
+    MyVSlot slotMachine(time(0)); // Initialize with current time as seed
+
+    // Example usage
+    auto result = slotMachine.Spin();
+    std::cout << "Spin result: " << result[0] << " " << result[1] << " " << result[2] << std::endl;
+
+    slotMachine.UpdateBalance(100);
+    std::cout << "Balance after update: " << slotMachine.GetBalance() << std::endl;
+
+    slotMachine.Reset();
+    std::cout << "Balance after reset: " << slotMachine.GetBalance() << std::endl;
+
+    return 0;
+}
+```
+
+Not bad, let's see if it will add the unit tests.
+
+Prompt: replace the example using main to unit tests using doctest.h
+
+Response:
+
+```c++
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
+#include <array>
+#include <cstdlib>
+#include <ctime>
+
+// VSlot interface defines the required methods for implementing a virtual slot machine.
+class VSlot {
+public:
+    virtual std::array<int, 3> Spin() = 0;
+    virtual void Reset() = 0;
+    virtual void UpdateBalance(int amount) = 0;
+    virtual int GetBalance() const = 0;
+    virtual ~VSlot() = default;
+};
+
+// MyVSlot class implements the VSlot interface.
+class MyVSlot : public VSlot {
+private:
+    int balance;
+
+public:
+    MyVSlot(int64_t seed) : balance(0) {
+        std::srand(seed);
+    }
+
+    std::array<int, 3> Spin() override {
+        return {std::rand() % 10 + 1, std::rand() % 10 + 1, std::rand() % 10 + 1};
+    }
+
+    void Reset() override {
+        balance = 0;
+    }
+
+    void UpdateBalance(int amount) override {
+        balance += amount;
+    }
+
+    int GetBalance() const override {
+        return balance;
+    }
+};
+
+TEST_CASE("Testing MyVSlot class") {
+    MyVSlot slotMachine(12345); // Initialize with a fixed seed for reproducibility
+
+    SUBCASE("Spin generates three numbers between 1 and 10") {
+        auto result = slotMachine.Spin();
+        CHECK(result[0] >= 1);
+        CHECK(result[0] <= 10);
+        CHECK(result[1] >= 1);
+        CHECK(result[1] <= 10);
+        CHECK(result[2] >= 1);
+        CHECK(result[2] <= 10);
+    }
+
+    SUBCASE("Balance updates correctly") {
+        slotMachine.UpdateBalance(100);
+        CHECK(slotMachine.GetBalance() == 100);
+
+        slotMachine.UpdateBalance(-50);
+        CHECK(slotMachine.GetBalance() == 50);
+    }
+
+    SUBCASE("Reset sets balance to zero") {
+        slotMachine.UpdateBalance(100);
+        slotMachine.Reset();
+        CHECK(slotMachine.GetBalance() == 0);
+    }
+}
+```
+
+Bad ass!
+
+We need to make a few tweaks to test.
+
+1. Change the test name to MyVSlotTest
+2. Update tests/CMakeLists.txt, setting the test name to MyVSlotTest
+
+Let's test it:
+
+```console
+cd build; cmake ..; make; ctest; cd ..
+```
+
+Output:
+
+```console
+-- File already exists: /Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp/doctest.h
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp/build
+[ 50%] Built target HelloWorld
+[100%] Built target test_vslot
+Test project /Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp/build
+    Start 1: MyVSlotTest
+1/1 Test #1: MyVSlotTest ......................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.01 sec
+```
+
+Success (happy dance).
+
+### Evaluate C++ Tests
+
+It's obvious that ChatGPT tested the MyVSlot class differently than I did. It did use a fixed seed, which I expected - so it passes the hallucination test. However, I have no issue with the actual implementation because it is functionally equivalent. I can't think of a reason to make changes or enhancements. So we're done!
+
+# Summary
+
+At this point we've finished the "business logic". But we've not created the API. So, it's pretty obvious that getting to this point required more effort than expected. Not to worry, using TDD and interfaces things will go a lot faster as we progress. In theory, the API should be a piece of cake now.
+
+I'm familiar with the Go tools for making APIs. I'm not familiar with C++ yet, so this will take a little more work.
+
+However, initially, we will generate the webpage by just spitting out a static representation of the slot machine, then refreshing the entire page. When this works, we'll make the page dynamic by using JSON/RPC calls from the web page to the server over HTTP, probably a websocket.
