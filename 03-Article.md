@@ -2,8 +2,6 @@
 
 This series of articles is designed as a tutorial for how to write a portable full stack service using modern techniques. I will take you on a journey from concept through deployment. The series will be detailed and therefore is closer to a book than a bunch of blog posts. Hopefully we'll all learn something along the way. I'll strive to make the series useful for software engineers at any point in their career. I will incorporate how I approach doing product development which has worked well when working with teams over my career.
 
-Let's continue with the tasks listed in the estimate.
-
 # Revisit Assessment
 
 Let's see how we are doing asking the original task list. I'll add a column:
@@ -19,15 +17,33 @@ Let's see how we are doing asking the original task list. I'll add a column:
 | Write code to display msg from server<sup>[3]</sup>             | 3      |        |
 | Total Effort                                                    | 16     |        |
 
-It's difficult to assess actual assessment because I'm writing these articles at the same time. However, I think I'm on track. Notice how the actual effort to complete setup and writing logic are reversed. Also notice the `?` for creating the API. This is typical.
+It's difficult to assess actual assessment because I'm writing these articles at the same time. However, I think I'm on track. For the setup task, notice how the estimated effort and actual effort is reversed. Also notice the `?` for creating the API. This is typical.
 
-For the setup case, I spent less than 3 hours, however my computer was already setup so I've adjusted it to account for what I forgot about initial conditions for a typical developer starting a new project with a new stack.
+For the setup case, I spent less than 3 hours, however my computer was already setup. It took me less than 1 hour, but I'm guessing actual for a developer setting up a new tool chain would be closer to 3 hours, so I logged 3.
 
-It's also common for work to be completed in "chunks". A chunk of 4-6 hours is typical. Most people lose focus after a few hours. Everyone is different, but the rule of thumb I use is a function of how frequently I make mistakes. When the frequency becomes noticeable, time to take a break.
+## The Quantum Nature of Time
 
-Quality is all about "yield". It's all about a personal commitment to building in quality from the ground up. TDD is a tool. **How** you do your work is a continuos activity that either creates and asset or a liability. Striving for 100% yield means work is only complete when all defects have been removed and the asset is ready for "validation". Verification is a continuous process. Escaped defects are caught by QA, which may not be sufficient in some Agile development teams. This results in the dreaded fix-on-fix cycle. I could point to the "Personal Software Process (PSP)" training I took, but everyone is different, so I'll refrain and stop the pontification. Let's get back to work.
+Using a total effort for time is misleading. In reality, work is completed in "chunks". Everybody works like this, however, my quantum is different than yours. It also changes based on environment, mood, energy level and more.
 
-Do I work on enhancing the API or creating the simple web page at this point? I could even work on the API. It's not necessary to follow the sequence outlined in the task list. What should I choose? It depends. Mostly on what you are capable of doing at the time. If you are focused, do harder things. If you don't have a lot of time (maybe a meeting is coming up, lunch?, beers and/or dinner soon?), these things will force you to rush.
+I can work for 4-6 hours, taking 5 min breaks once an hour. During these periods I pay attention to the number of mistakes I make. When the frequency becomes noticeable, time to take break. This gives me 2 or 3 periods with durations between 2 and 6 hours. For complex stuff, I'll use the while 6 hours to prevent losing context.
+
+## The Effect of Quality on Yield
+
+Every production process has a yield, coding is no different. I was formally certified in the Personal Software Process (PSP) a very long time ago. It taught me how to write code that does not have defects cause by me, well, being me. Explaining this might be the subject of a future article, for now it's just about quality and yield.
+
+I like to finish something and be done with it. When it comes back from a code review, like a pull request or from QA or the customer as a bug, it affects my yield. So, if I have to do 10% rework, I'm wasting 10% of the time I could be producing more code. This also costs my employer money, which is no big deal, until you think about why an employer hires contract talent. It's all about the money baby.
+
+I tried to convince an employer that using off shore coders at 1/4 the cost compared to my services was a net loss. I measured the rework and time it took for me to either fix the problem or request fix-on-fix and associated documentation to convince the guys doing the work to actually fix it. Granted this was a long time ago, but actually doing the math proved my point. The quality process guy sat in the same room as me and he kinda believed me, but my management didn't.
+
+So, I ended up just writing a lot more of the code than I should have - taking one for the team. The time came out of my personal time. So the employer saw it as a win-win. But the result is a disgruntled employee.
+
+Suffice to say, TDD helps improve yield. It doesn't make creating the asset quicker, it makes creating the asset more _reliable_ and therefore de-risks a project and instills trust between team members and management. This leads to a happier, less toxic workplace. It also feels better.
+
+Enough pontification, Let's get back to work.
+
+### What's Next?
+
+Do I work on enhancing the API or creating the simple web page at this point? I could even work on the API. It's not necessary to follow the sequence outlined in the task list. What should I choose? It depends. Mostly on what you are capable of doing at the time. If you are focused, do harder things. If you don't have a lot of time (maybe a meeting is coming up, lunch, beers and/or dinner soon?), these things will force you to rush.
 
 I have 2 hours before lunch so I think I can do the web page and some of the API. This will allow me to use the "define the output first" approach. We can also use our "pair programmer" which adds some interest and otherwise less than exciting task. Doing the webpage will help me think about the API. So, let's do it!
 
@@ -39,13 +55,23 @@ I actually posted about using [AI as a pair programmer](https://www.linkedin.com
 
 ## Methodology
 
-Agile is methodology. It can be used for many things. It has "camps", SCRUM is a common camp for instance. In reality, Agile started out at "Extreme Programming" when I learned it. Over time, it was produced and adopted widely. However, if you actually study the genesis of SCRUM you will discover it was not codified by a software engineer. I suppose this is OK, however, as a practicing software engineer trained in CMMI principles from the SEI, I can spot the flaws.
+Agile is a methodology. It can be used for many things. It also has "camps", SCRUM is a common camp for instance. In reality, Agile started out at "Extreme Programming" when I learned it. Over time, it was produced and adopted widely. However, if you actually study the genesis of SCRUM you will discover it was not codified by a software engineer. I suppose this is OK, however, as a practicing software engineer (trained in using techniques from the [SEI](https://sei.cmu.edu)), I can spot the flaws.
 
-Our objective is to get this product built, so I'll refrain from a methodology discussion. Suffice to say, using a pair programmer is essential to agility and yield. TDD is essential to yield. I've seen many arguments claiming that using TDD is slower than using Agile methods. Ok, fine. If yield is ignored yield, mistakes are factored out of the yield equation. This pawns off unfinished products downstream. You may actually be the guy downstream.
+Our objective is to get this product built, so I'll refrain from a methodology discussion. Suffice to say, using a pair programmer is essential to agility and yield. TDD is essential to yield. I've seen many arguments claiming that using TDD is slower than using Agile methods. Ok, fine, this is kinda true. But let me put a finer point on it using an anecdote:
 
-Suffice to say, using a AI as a pair programmer is better than nothing. Since it's just me doing this project soup to nuts, that's what I'll do.
+While at university we had Unix systems (Linux wasn't invented yet). We used `talk` just like chat is used today. `talk` showed you what the other person was typing as they were typing it, not just a flashing `...` like chat does today. Watching someone type slowly is actually amusing, so it passed the time. Things were slower back then because we used dumb terminals connected over serial lines. The speeds were between 300 baud (line speed of 240 bps) and 9600 baud (line speed of 7680 bps). But I digress.
+
+Anyway, we'd use `talk` with our professor who could type phenomenally fast. He also made mistakes phenomenally fast. He'd backspace over words faster than Tom Hanks in "You've Got Mail." Of course, we had to wait until he was done typing to figure out what he was trying to communicate. While waiting we'd laugh and say "he's making mistakes at 9600 baud". Moral of the story: his yield was terrible. He might as well been on a 300 baud connection, it wouldn't have mattered. That's yield.
+
+So, unless you are producing code that doesn't need to be revised your golden. It will get through peer review and QA an end up in production. Shooting 100%. When mistakes come back, yield drops. I'm OK with having 1 mistake come back after claiming my code is done. After than I get upset with myself and remind myself to go back to basics. People I work with, usually don't subscribe to this method. They're comfortable with some "technical debt" and they fix it all the time. This is fine and all, but re-work is re-work and it usually comes at a bad time or interferes with creating a new asset. Sometimes for weeks or longer.
+
+If this doesn't bother you, think about the poor soul picking up a project you leave. That person has a learning curve and maybe just the code to look at, and oh yeah, some deadline to fix or create something. Leaving technical debt for the future puts people joining your project at a disadvantage. You might be a team lead, what happens? You'll start writing the, usually the harder stuff and it negates adding someone to the project in the first place. Admittedly, I'm exaggerating, but I hope you get the point.
+
+Suffice to say, using an AI as a pair programmer is better than nothing. Since it's just me doing this project soup to nuts, that's what I'll do.
 
 ## Prompt for a Simple Web Page
+
+I'll let "the other guy" (ChatGPT) write some code and I'll be the pair programmer. Since we need a web page, lets just ask for it along with some details.
 
 ```
 Prompt: write me code to display a web page like this:
@@ -132,7 +158,7 @@ Good enough to start with - that took all of 10 seconds. Nice.
 
 ## Extending the API
 
-Now that we have some idea of the output required, we know the API needs provisions to:
+Now that we have some idea of the output required, we need to add functionality, so let's describe this in a list:
 
 - Provide the wheel values (almost done)
 - Spin (done)
@@ -140,15 +166,17 @@ Now that we have some idea of the output required, we know the API needs provisi
 - Add 10 to the balance
 - Provide the balance
 
-### Go Interfaces
+We have enough to start writing an interface as the basis of the implementation.
 
-Let's start with the Go package. This is a good time to introduce Go interfaces. A Go interface can actually define the API for us. We will be using this interface later. Now is a good time to define it.
+### Using Go Interfaces
 
-As an aside, you can write your own code generators in Go easily. This is because the language is well defined using something call `AST`. Feel free to look into this. It's bad-ass.
+This is a good time to introduce Go interfaces. A Go interface can actually define the API for us.
 
-Let's pawn this off on our pair programmer :)
+It is also easy to write code generators because Go provides something called `AST`. We'll probably use a code generator later, for now let's just define the interface.
 
 #### ChatGPT Interaction to Generate the Go Interface
+
+Let's pawn writing the interface off on our pair programmer.
 
 Prompts:
 
@@ -239,11 +267,11 @@ The response has more than we bargained for. It includes a struct to hold the ba
 
 Using this data we can now update `vslot/vslot.go` and `vslot_test.go`.
 
-There is no compelling reason to put the interface in it's own file just yet. We'll make this refactor later when using the code generator. For now, lets just update `vslot.go`.
+There is no compelling reason to put the interface in it's own file just yet. For now, lets just update `vslot.go`.
 
 ### TDD to the rescue
 
-Ok, so writing the unit tests for this wasn't quite as simple as I expected. So, I'm into some refactoring. The issue is regarding the behavior of `rand`. This code fails to set is_win to true:
+Ok, so writing the unit tests for this wasn't quite as simple as I expected. So, I'm into some refactoring. The issue is regarding the behavior of `rand`. This code fails to set `is_win` to true:
 
 ```go
 func TestBalance(t *testing.T) {
@@ -266,13 +294,13 @@ func TestBalance(t *testing.T) {
 }
 ```
 
-I figured this out using the Go debugger. I'm not sure why, I suspect it is because Go tests are run in parallel, but since I used the debugger to perform the test, I suspect it's something different.
+I figured this out using the Go debugger. I'm not sure why, but I suspect it is because Go tests are run in parallel. Thinking about this more I observed that I the debugger to perform the test, which means it did not run in parallel. So now I suspect it's something different.
 
-Noodle... oh, crap. Globals are fine in Go tests, but `rand.Intn(10)` is called when the globals are initialized. This is wrong because the seed is not set yet. rand does not report an error, I suppose it just uses a random seed. It really doesn't matter. The globals need to be set in a setup function.
+Noodle... noodle... oh, crap. Globals are fine in Go tests, but `rand.Intn(10)` is called when the globals are initialized. This is wrong because the seed is not set yet and `rand` does not report an error (by design it seems), so I suppose it just uses a random seed. It really doesn't matter. The globals need to be set in a setup function anyway, so that's what we'll do.
 
-Thinking about this further, it seems initializing the random number generator should be more controlled to avoid this from creeping in at a later date. It's likely that at some time in the future the code will be modified by someone who is not using TDD, not running the unit tests or future units tests are flawed. So we should consider adding some protections. For now, let's just put it on the list. We can do this using `// REVIEW` in the code, my handy Todo+ extension will flag it.
+Thinking about this even further, it seems initializing the random number generator should be more controlled. This will avoid this nasty behavior from creeping in at a later date. It might just save some poor soul in the future some time. So we should consider adding some protections. That's a little complicated and we want to remain focused so, let's just put it on the list of things to fix (ok, we're adding technical debt - fine). We can just add `// REVIEW` to the line of code and my handy Todo+ extension will flag it in the future.
 
-We'll also likely need to use globals, in the tests. This should be done with care. We will use a `TestMain()` function to accomplish this.
+We'll also likely need to use globals, in the tests. This should be done with care. This means we need a `TestMain()` function to accomplish this.
 
 ### Refactored Go Code
 
@@ -443,7 +471,9 @@ Prompt: convert this code to C++:
 
 _paste vslot/vslot.go here_
 
-Response: Here's the equivalent C++ code for your Go implementation:
+Response:
+
+Here's the equivalent C++ code for your Go implementation:
 
 ```c++
 #include <iostream>
@@ -623,8 +653,8 @@ It's obvious that ChatGPT tested the MyVSlot class differently than I did. It di
 
 # Summary
 
-At this point we've finished the "business logic". But we've not created the API. So, it's pretty obvious that getting to this point required more effort than expected. Not to worry, using TDD and interfaces things will go a lot faster as we progress. In theory, the API should be a piece of cake now.
+At this point we've finished the "business logic". But we've not created the API. So, it's pretty obvious that getting to this point required more effort than expected. Not to worry, by using TDD and interfaces things will go a lot faster as we progress. In theory, the API should be a piece of cake now.
 
 I'm familiar with the Go tools for making APIs. I'm not familiar with C++ yet, so this will take a little more work.
 
-However, initially, we will generate the webpage by just spitting out a static representation of the slot machine, then refreshing the entire page. When this works, we'll make the page dynamic by using JSON/RPC calls from the web page to the server over HTTP, probably a websocket.
+However, initially, we will generate the webpage by just spitting out a static representation of the slot machine, then refreshing the entire page. When this works, we'll make the page dynamic by using JSON/RPC calls from the web page to the server over HTTP, probably using a websocket.
