@@ -1,0 +1,11 @@
+#!/bin/bash
+go generate ./...
+go run . & sleep 2
+
+curl -d '{}' http://localhost:8998/VSlotService.Spin
+curl -d '{"Amount": 100}' http://localhost:8998/VSlotService.UpdateBalance
+curl -d '{}' http://localhost:8998/VSlotService.GetBalance
+curl -d '{}' http://localhost:8998/VSlotService.Reset
+curl -d '{}' http://localhost:8998/VSlotService.GetBalance
+
+kill %1

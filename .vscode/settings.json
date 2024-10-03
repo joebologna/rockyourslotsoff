@@ -1,5 +1,10 @@
 {
     "cSpell.words": [
-        "Pythonista"
-    ]
+        "monadicstack",
+        "Pythonista",
+        "stretchr",
+        "struct",
+        "vslot"
+    ],
+    "cmake.sourceDirectory": "/Users/joeb/Projects/2024/rockyourslotsoff/src/Cpp"
 }
