@@ -3,6 +3,7 @@ module slots
 go 1.19
 
 require (
+	github.com/davidrenne/frodo v1.1.5
 	github.com/monadicstack/frodo v1.1.3
 	github.com/monadicstack/respond v0.4.2
 	github.com/rs/cors v1.11.1

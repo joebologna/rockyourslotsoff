@@ -7,7 +7,7 @@
 }
 
 @test "UpdateBalance" {
-    [[ $(curl -d '{"Amount": 100}' http://localhost:8998/VSlotService.UpdateBalance | jq '.Success') = "true" ]]
+    [[ $(curl -d '{"Amount": 100}' http://localhost:8998/VSlotService.UpdateBalance | jq '.Amount') -eq 100 ]]
 }
 
 @test "GetBalance" {

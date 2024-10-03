@@ -1,5 +1,11 @@
 #!/bin/bash
+
+trap "pkill slot" EXIT
+
 go generate ./...
+ls -l api/gen/vslot_service.gen.client.js 
+sed -i '' -e '/module.exports/,$d' -e '/use strict/s/^/\/\//' api/gen/vslot_service.gen.client.js
+
 go run . & sleep 2
 
 curl -d '{}' http://localhost:8998/VSlotService.Spin
@@ -7,5 +13,3 @@ curl -d '{"Amount": 100}' http://localhost:8998/VSlotService.UpdateBalance
 curl -d '{}' http://localhost:8998/VSlotService.GetBalance
 curl -d '{}' http://localhost:8998/VSlotService.Reset
 curl -d '{}' http://localhost:8998/VSlotService.GetBalance
-
-kill %1

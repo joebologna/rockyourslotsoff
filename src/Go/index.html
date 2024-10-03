@@ -25,6 +25,7 @@
       }
     </style>
   </head>
+  <script src="api/gen/vslot_service.gen.client.js"></script>
   <body>
     <div class="numbers">
       <span id="number1">0</span>
@@ -39,23 +40,18 @@
     <div class="balance">Balance: <span id="balance">0</span> credits</div>
 
     <script>
-      let balance = 0;
+      let client = new VSlotServiceClient('http://localhost:8998');
+      var balance = 0;
 
       document.getElementById('spinButton').addEventListener('click', function () {
-        fetch('http://localhost:8998/VSlotService.Spin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            // Assuming the response contains an array of three numbers
-            document.getElementById('number1').textContent = data[0];
-            document.getElementById('number2').textContent = data[1];
-            document.getElementById('number3').textContent = data[2];
+        client
+          .Spin({})
+          .then((response) => {
+            document.getElementById('number1').textContent = response.Reels[0];
+            document.getElementById('number2').textContent = response.Reels[1];
+            document.getElementById('number3').textContent = response.Reels[2];
           })
-          .catch((error) => console.error('Error:', error));
+          .catch((error) => console.error(error));
       });
 
       document.getElementById('resetButton').addEventListener('click', function () {
@@ -63,55 +59,24 @@
         document.getElementById('number1').textContent = 0;
         document.getElementById('number2').textContent = 0;
         document.getElementById('number3').textContent = 0;
-        fetch('http://localhost:8998/VSlotService.Reset', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            balance = 0;
-          })
-          .catch((error) => console.error('Error:', error));
+        client.Reset({}).catch((error) => console.error(error));
       });
 
       document.getElementById('addCreditsButton').addEventListener('click', function () {
         // Add 10 credits to the balance
         // Fetch the current balance
-        fetch('http://localhost:8998/VSlotService.GetBalance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.Success) {
-              // Update the balance by adding 10 credits
-              const newBalance = data.Amount + 10;
-              fetch('http://localhost:8998/VSlotService.UpdateBalance', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ Amount: newBalance }),
-              })
-                .then((response) => response.json())
-                .then((updateData) => {
-                  if (updateData.Success) {
-                    // Display the updated balance
-                    document.getElementById('balance').textContent = newBalance;
-                  } else {
-                    console.error('Failed to update balance');
-                  }
-                })
-                .catch((error) => console.error('Error:', error));
-            } else {
-              console.error('Failed to fetch balance');
-            }
-          })
-          .catch((error) => console.error('Error:', error));
+        client.GetBalance({}).then((response) => {
+          balance = response.Amount;
+          // Update the balance by adding 10 credits
+          client
+            .UpdateBalance({ Amount: balance + 10 })
+            .then((response) => {
+              // Display the updated balance
+              balance = response.Amount;
+              document.getElementById('balance').textContent = balance;
+            })
+            .catch((error) => console.error(error));
+        });
       });
     </script>
   </body>

@@ -33,5 +33,5 @@ func (v *VSlotServiceHandler) Spin(context.Context, *SpinRequest) (resp *SpinRes
 // UpdateBalance implements VSlotService.
 func (v *VSlotServiceHandler) UpdateBalance(_ context.Context, req *UpdateBalanceRequest) (*UpdateBalanceResponse, error) {
 	v.MyVSlot.UpdateBalance(req.Amount)
-	return &UpdateBalanceResponse{Success: true}, nil
+	return &UpdateBalanceResponse{Amount: v.MyVSlot.GetBalance(), Success: true}, nil
 }

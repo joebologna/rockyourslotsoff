@@ -21,7 +21,10 @@ type ResetRequest struct{}
 type ResetResponse struct{ Success bool }
 
 type UpdateBalanceRequest struct{ Amount int }
-type UpdateBalanceResponse struct{ Success bool }
+type UpdateBalanceResponse struct {
+	Amount  int
+	Success bool
+}
 
 type GetBalanceRequest struct{}
 type GetBalanceResponse struct {
