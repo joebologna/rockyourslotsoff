@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,8 +19,10 @@ func main() {
 		err error
 	)
 
+	fmt.Println("Starting server on localhost:8998")
+
 	handler := http.NewServeMux()
-	service := api.VSlotServiceHandler{MyVSlot: vslot.NewMyVSlot(42)}
+	service := api.VSlotServiceHandler{MyVSlot: vslot.NewMyVSlot(vslot.WinningSeed, vslot.LoseAmount)}
 
 	gateway := slots_rpc.NewVSlotServiceGateway(&service, rpc.WithMiddleware(cors.AllowAll().ServeHTTP))
 	handler.HandleFunc("/", gateway.ServeHTTP)

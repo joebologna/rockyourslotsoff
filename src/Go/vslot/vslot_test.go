@@ -2,7 +2,6 @@ package vslot
 
 import (
 	"flag"
-	"math/rand"
 	"os"
 	"testing"
 
@@ -27,40 +26,49 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
-	myVSlot = NewMyVSlot(0)
-	spin0 = [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
-	spin1 = [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
+	myVSlot = NewMyVSlot(WinningSeed, LoseAmount)
+	spin0 = WinningReels
+	spin1 = [3]int{4, 5, 2}
 }
 
 func TestSpin(t *testing.T) {
 	a := assert.New(t)
 
-	myVSlot = NewMyVSlot(0)
+	myVSlot = NewMyVSlot(WinningSeed, LoseAmount)
 
-	spin_result := myVSlot.Spin()
-	a.Equal(spin0, spin_result)
+	spinResult, isWinner, err := myVSlot.Spin()
+	a.Equal(spin0, spinResult)
+	a.True(isWinner)
+	a.Nil(err)
 }
 
 func TestTwoSpins(t *testing.T) {
 	a := assert.New(t)
 
-	myVSlot = NewMyVSlot(0)
+	myVSlot = NewMyVSlot(WinningSeed, LoseAmount)
 
-	spin_result := myVSlot.Spin()
-	a.Equal(spin0, spin_result)
+	spinResult, isWinner, err := myVSlot.Spin()
+	a.Equal(spin0, spinResult)
+	a.True(isWinner)
+	a.Nil(err)
 
-	spin_result = myVSlot.Spin()
-	a.Equal(spin1, spin_result)
+	spinResult, isWinner, err = myVSlot.Spin()
+	a.Equal(spin1, spinResult)
+	a.False(isWinner)
+	a.Nil(err)
 }
 
-func TestBalance(t *testing.T) {
+func TestUpdateBalance(t *testing.T) {
 	a := assert.New(t)
 
-	myVSlot = NewMyVSlot(0)
-	a.Equal(myVSlot.GetBalance(), 0)
+	myVSlot = NewMyVSlot(WinningSeed, LoseAmount)
+	a.Equal(LoseAmount, myVSlot.GetBalance())
 
-	spin_result := myVSlot.Spin()
-	a.Equal(spin0, spin_result)
+	spinResult, isWinner, err := myVSlot.Spin()
+	a.Equal(spin0, spinResult)
+	a.Equal(LoseAmount+WinAmount, myVSlot.GetBalance())
+	a.True(isWinner)
+	a.Nil(err)
 
 	myVSlot.UpdateBalance(10)
 	a.Equal(10, myVSlot.GetBalance())
@@ -69,15 +77,64 @@ func TestBalance(t *testing.T) {
 func TestReset(t *testing.T) {
 	a := assert.New(t)
 
-	myVSlot = NewMyVSlot(0)
-	a.Equal(myVSlot.GetBalance(), 0)
+	myVSlot = NewMyVSlot(WinningSeed, LoseAmount)
+	a.Equal(LoseAmount, myVSlot.GetBalance())
 
-	spin_result := myVSlot.Spin()
-	a.Equal(spin0, spin_result)
-
-	myVSlot.UpdateBalance(10)
-	a.Equal(10, myVSlot.GetBalance())
+	spinResult, isWinner, err := myVSlot.Spin()
+	a.Equal(spin0, spinResult)
+	a.Equal(LoseAmount+WinAmount, myVSlot.GetBalance())
+	a.True(isWinner)
+	a.Nil(err)
 
 	myVSlot.Reset()
-	a.Equal(0, myVSlot.GetBalance())
+	a.Equal(LoseAmount, myVSlot.GetBalance())
+	a.Equal([3]int{}, myVSlot.GetReels())
+}
+
+func TestFindWinner(t *testing.T) {
+	a := assert.New(t)
+
+	seed := WinningSeed
+	for {
+		myVSlot = NewMyVSlot(seed, 100)
+		_, isWinner, _ := myVSlot.Spin()
+		if isWinner {
+			break
+		}
+		seed += 1
+	}
+	a.True(true)
+}
+
+func TestWinner(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot := NewMyVSlot(WinningSeed, LoseAmount)
+	reels, isWinner, err := myVSlot.Spin()
+
+	a.True(isWinner)
+	a.Equal(WinningReels, reels)
+	a.Nil(err)
+}
+
+func TestLoser(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot := NewMyVSlot(0, LoseAmount)
+	reels, isWinner, err := myVSlot.Spin()
+
+	a.False(isWinner)
+	a.Equal([3]int{5, 5, 4}, reels)
+	a.Nil(err)
+}
+
+func TestNoFunds(t *testing.T) {
+	a := assert.New(t)
+
+	myVSlot := NewMyVSlot(WinningSeed, 0)
+	reels, isWinner, err := myVSlot.Spin()
+
+	a.False(isWinner)
+	a.Equal([3]int{}, reels)
+	a.NotNil(err)
 }

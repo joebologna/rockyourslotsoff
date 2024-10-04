@@ -1,24 +1,31 @@
 @test "Spin" {
-    pkill slots || true
-    go generate ./...
-    go run . &
-    sleep 2
+    [[ $(curl -d '{}' http://localhost:8998/VSlotService.Reset | jq '.Success') = "true" ]]
     [[ $(curl -d '{}' http://localhost:8998/VSlotService.Spin | jq '.Success') = "true" ]]
 }
 
-@test "UpdateBalance" {
-    [[ $(curl -d '{"Amount": 100}' http://localhost:8998/VSlotService.UpdateBalance | jq '.Amount') -eq 100 ]]
-}
-
-@test "GetBalance" {
-    [[ $(curl -d '{}' http://localhost:8998/VSlotService.GetBalance | jq '.Amount') -eq 100 ]]
-}
-
-@test "Reset" {
+@test "TwoSpins" {
     [[ $(curl -d '{}' http://localhost:8998/VSlotService.Reset | jq '.Success') = "true" ]]
+    spin=$(curl -d '{}' http://localhost:8998/VSlotService.Spin)
+    [[ $(echo $spin | jq '.Success') = "true" ]]
+    [[ $(echo $spin | jq '.Reels[]' | awk '{printf "%s", $0}') = "777" ]]
 }
 
-@test "GetBalance2" {
-    [[ $(curl -d '{}' http://localhost:8998/VSlotService.GetBalance | jq '.Success') = "true" ]]
-    pkill slots || true
+@test "UpdateBalance" {
+    [[ $(curl -d '{}' http://localhost:8998/VSlotService.Reset | jq '.Success') = "true" ]]
+    spin=$(curl -d '{}' http://localhost:8998/VSlotService.Spin)
+    [[ $(echo $spin | jq '.Success') = "true" ]]
+    [[ $(echo $spin | jq '.Reels[]' | awk '{printf "%s", $0}') = "777" ]]
+    balance=$(curl -d '{"Amount":10}' http://localhost:8998/VSlotService.UpdateBalance | jq '.Amount')
+    [[ $balance -eq 10 ]]
+}
+
+@test "TestLoser" {
+    [[ $(curl -d '{}' http://localhost:8998/VSlotService.Reset | jq '.Success') = "true" ]]
+    spin=$(curl -d '{}' http://localhost:8998/VSlotService.Spin)
+    [[ $(echo $spin | jq '.Success') = "true" ]]
+    [[ $(echo $spin | jq '.Reels[]' | awk '{printf "%s", $0}') = "777" ]]
+    spin=$(curl -d '{}' http://localhost:8998/VSlotService.Spin)
+    [[ $(echo $spin | jq '.Success') = "true" ]]
+    [[ $(echo $spin | jq '.Reels[]' | awk '{printf "%s", $0}') = "452" ]]
+    [[ $(echo $spin | jq '.IsWinner') = "false" ]]
 }

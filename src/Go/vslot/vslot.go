@@ -1,46 +1,77 @@
 package vslot
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // VSlot interface defines the required methods for implementing a virtual slot machine.
 type VSlot interface {
-	Spin() [3]int             // Spin accepts a seed and returns a slice of ints
-	Reset()                   // Reset resets the spinner's state
-	UpdateBalance(amount int) // UpdateBalance updates the balance by the given amount
-	GetBalance() int          // GetBalance returns the current balance
+	Spin() (reels [3]int, is_winner bool, err error)
+	GetBalance() (balance int)
+	GetReels() (reels [3]int)
+	Reset()
+	UpdateBalance(amount int) (balance int)
 }
 
-// MyVSlot struct implements the Spinner interface.
+// MyVSlot struct implements the VSlot interface.
 type MyVSlot struct {
-	balance int
+	seed                    int64
+	balance, initialBalance int
+	reels                   [3]int
 }
 
-// Ensure MySpinner implements the Spinner interface.
+var WinningReels = [3]int{7, 7, 7}
+
+const (
+	WinAmount   = 100
+	LoseAmount  = 10
+	WinningSeed = int64(589)
+)
+
+// Ensure MySpinner implements the VSlot interface.
 var _ VSlot = (*MyVSlot)(nil) // This line enforces the implementation at compile time.
 
-func NewMyVSlot(seed int64) *MyVSlot {
-	m := MyVSlot{}
-	m.balance = 0
-	rand.Seed(seed)
-	return &m
+func NewMyVSlot(initialSeed int64, initialBalance int) *MyVSlot {
+	rand.Seed(initialSeed)
+	return &MyVSlot{seed: initialSeed, balance: initialBalance, initialBalance: initialBalance}
 }
 
-// Spin generates a slice of random integers based on the seed.
-func (s *MyVSlot) Spin() [3]int {
-	return [3]int{rand.Intn(10) + 1, rand.Intn(10) + 1, rand.Intn(10) + 1}
+// Spin sets the reels to random values and returns them.
+func (vs *MyVSlot) Spin() (reels [3]int, is_winner bool, err error) {
+	if vs.balance < LoseAmount {
+		return [3]int{}, false, fmt.Errorf("insufficient balance")
+	}
+	vs.reels[0] = rand.Intn(10) + 1
+	vs.reels[1] = rand.Intn(10) + 1
+	vs.reels[2] = rand.Intn(10) + 1
+	if vs.reels == WinningReels {
+		vs.balance += WinAmount
+		return vs.reels, true, nil
+	}
+	vs.balance -= LoseAmount
+	return vs.reels, false, nil
+}
+
+// GetReels returns the current reels.
+func (vs *MyVSlot) GetReels() [3]int {
+	return vs.reels
 }
 
 // Reset resets the spinner's state.
-func (s *MyVSlot) Reset() {
-	s.balance = 0 // Reset balance to 0
+func (vs *MyVSlot) Reset() {
+	vs.balance = vs.initialBalance
+	vs.reels = [3]int{}
+	rand.Seed(vs.seed)
 }
 
-// UpdateBalance updates the balance by the given amount.
-func (s *MyVSlot) UpdateBalance(amount int) {
-	s.balance += amount
+// UpdateBalance updates the balance by the given amount and returns the new balance.
+func (vs *MyVSlot) UpdateBalance(amount int) int {
+	vs.balance = amount
+	return vs.balance
 }
 
 // GetBalance returns the current balance.
-func (s *MyVSlot) GetBalance() int {
-	return s.balance
+func (vs *MyVSlot) GetBalance() int {
+	return vs.balance
 }
