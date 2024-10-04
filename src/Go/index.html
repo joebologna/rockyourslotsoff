@@ -37,6 +37,9 @@
     <button id="resetButton">Reset</button>
     <button id="addCreditsButton">Add 10 Credits</button>
 
+    <div class="balance">IsWinner: <span id="is_winner">false</span></div>
+    <div class="balance">Amount Won: <span id="amount_won">0</span></div>
+
     <div class="balance">Balance: <span id="balance">0</span> credits</div>
 
     <script>
@@ -50,6 +53,7 @@
             document.getElementById('number1').textContent = response.Reels[0];
             document.getElementById('number2').textContent = response.Reels[1];
             document.getElementById('number3').textContent = response.Reels[2];
+            document.getElementById('is_winner').textContent = response.IsWinner;
           })
           .catch((error) => console.error(error));
       });
