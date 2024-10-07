@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rotate Boxes</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="400" height="200"></canvas>
+    <script>
+      var canvas = document.getElementById('myCanvas');
+      var ctx = canvas.getContext('2d');
+
+      var boxes = [
+        { x: 10, y: 10 },
+        { x: 120, y: 10 },
+        { x: 230, y: 10 },
+      ];
+      var boxColors = ['red', 'green', 'blue'];
+      var offset = 0;
+
+      function drawBoxes() {
+        console.table(boxes);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+        boxes.forEach((box, i) => {
+          j = (offset + i) % boxColors.length;
+          ctx.fillStyle = boxColors[j]; // Set the fill color
+          ctx.fillRect(box.x, box.y, 100, 100); // Draw the rectangle
+        });
+        if (offset == 0) {
+          offset = boxColors.length - 1;
+        } else {
+          offset--;
+        }
+      }
+
+      setInterval(() => {
+        drawBoxes();
+      }, 1000);
+    </script>
+  </body>
+</html>
