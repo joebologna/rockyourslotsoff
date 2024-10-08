@@ -36,33 +36,63 @@ func run() {
 	}
 	defer win.Destroy()
 
+	sprites := make([]pixel.Picture, 0)
+	for _, sprite := range []string{
+		"01-Apple.png",
+		"02-Banana.png",
+		"03-Blueberry.png",
+		"04-Orange.png",
+		"05-Strawberry.png",
+		"06-Watermelon.png",
+		"07-Seven.png",
+	} {
+		var pic pixel.Picture
+		if pic, err = loadPicture("Reel-Images/" + sprite); err != nil {
+			panic(err)
+		}
+		sprites = append(sprites, pic)
+	}
+
 	// imd := imdraw.New(nil)
-
 	// filledRect(imd, 100, 100, 200, 200, pixel.RGB(0, 1, 0), pixel.RGB(1, 0, 0))
-
-	spritesheet, err := loadPicture("spritesheet.png")
-	if err != nil {
-		panic(err)
-	}
-
-	size := float64(312)
-	sprites := []*pixel.Sprite{
-		pixel.NewSprite(spritesheet, pixel.R(8, 400+size+22, 8+size, 42+3*size+22)),
-		pixel.NewSprite(spritesheet, pixel.R(8, 400, 8+size, 42+2*size)),
-		pixel.NewSprite(spritesheet, pixel.R(8, 42, 8+size, 42+size)),
-	}
 
 	for !win.Closed() {
 		win.Clear(colornames.Whitesmoke)
 
-		// delta := float64(280)
-		p := win.Bounds().Center()
-		sprites[0].Draw(win, pixel.IM.Moved(p))
-		// p = p.Add(pixel.V(0, -delta))
-		sprites[1].Draw(win, pixel.IM.Moved(p))
-		// p = p.Add(pixel.V(0, delta*2))
-		sprites[2].Draw(win, pixel.IM.Moved(p))
-		// imd.Draw(win)
+		i := 0
+		p := win.Bounds().Bounds().Norm().Min.Add(sprites[i].Bounds().Size().Scaled(0.5))
+		sprite := pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
+
+		i++
+		p = p.Add(pixel.V(0, sprite.Frame().Max.Y))
+		sprite = pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
+
+		i++
+		p = p.Add(pixel.V(0, sprite.Frame().Max.Y))
+		sprite = pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
+
+		i++
+		p = p.Add(pixel.V(sprite.Frame().Max.X, 0))
+		sprite = pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
+
+		i++
+		p = p.Sub(pixel.V(0, sprite.Frame().Max.Y))
+		sprite = pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
+
+		i++
+		p = p.Sub(pixel.V(0, sprite.Frame().Max.Y))
+		sprite = pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
+
+		i++
+		p = p.Add(pixel.V(sprite.Frame().Max.X, 0))
+		sprite = pixel.NewSprite(sprites[i], sprites[i].Bounds())
+		sprite.Draw(win, pixel.IM.Moved(p))
 
 		win.Update()
 	}
