@@ -22,8 +22,11 @@ public class MainForm : Form
     private System.Windows.Forms.Timer durationTimer;
     private Random random;
     private Button restartButton;
+    private Label creditsLabel;
+    private Label resultLabel;
 
     private int[] selectedIndices;
+    private int credits;
 
     public MainForm()
     {
@@ -43,21 +46,33 @@ public class MainForm : Form
         durationTimer.Interval = 2000; // 2 seconds
         durationTimer.Tick += DurationTimer_Tick;
 
-        selectedIndices = SpinReel(3);
+        selectedIndices = new int[imagePaths.Length]; // Initialize selectedIndices
+
+        credits = 10; // Initialize credits
+
+        creditsLabel = new Label
+        {
+            Text = $"Credits: {credits}",
+            Location = new Point(10, 10),
+            AutoSize = true
+        };
+        this.Controls.Add(creditsLabel);
+
+        resultLabel = new Label
+        {
+            Text = "",
+            Location = new Point(10, 40),
+            AutoSize = true
+        };
+        this.Controls.Add(resultLabel);
 
         restartButton = new Button
         {
-            Text = "Spin",
-            Location = new Point(400 - 50, 300),
-            Width = 100,
-            Height = 30
+            Text = "Restart",
+            Location = new Point(10, 70)
         };
         restartButton.Click += RestartButton_Click;
-
         this.Controls.Add(restartButton);
-
-        // Start the timers initially
-        StartTimers();
     }
 
     private int[] SpinReel(int length)
@@ -75,8 +90,10 @@ public class MainForm : Form
         }
 
         Console.WriteLine("Reading files...");
-        this.Controls.Clear(); // Clear previous images except the button
+        this.Controls.Clear(); // Clear previous images except the button and label
         this.Controls.Add(restartButton);
+        this.Controls.Add(creditsLabel);
+        this.Controls.Add(resultLabel);
 
         selectedIndices = SpinReel(3);
 
@@ -112,7 +129,26 @@ public class MainForm : Form
     {
         timer.Stop();
         durationTimer.Stop();
-        if (selectedIndices.Distinct().Count() == 3) { Console.WriteLine("You win big!"); } else if (selectedIndices.Distinct().Count() == 2) { Console.WriteLine("You win small."); } else { Console.WriteLine("You lose :("); }
+        var n = selectedIndices.Distinct().Count();
+        Console.WriteLine($"n = {n}, selectedIndices = {string.Join(", ", selectedIndices)}");
+        switch (n)
+        {
+            case 1:
+                Console.WriteLine("You win big!");
+                credits += 10;
+                resultLabel.Text = "You win big!";
+                break;
+            case 2:
+                Console.WriteLine("Push.");
+                resultLabel.Text = "Push.";
+                break;
+            case 3:
+                Console.WriteLine("You lose :(");
+                credits -= 1;
+                resultLabel.Text = "You lose :(";
+                break;
+        }
+        creditsLabel.Text = $"Credits: {credits}";
     }
 
     private void RestartButton_Click(object? sender, EventArgs e)
