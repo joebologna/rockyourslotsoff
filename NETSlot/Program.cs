@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,8 @@ public class MainForm : Form
     private Random random;
     private Button restartButton;
 
+    private int[] selectedIndices;
+
     public MainForm()
     {
         this.Text = "Display PNG Images";
@@ -40,6 +43,8 @@ public class MainForm : Form
         durationTimer.Interval = 2000; // 2 seconds
         durationTimer.Tick += DurationTimer_Tick;
 
+        selectedIndices = SpinReel(3);
+
         restartButton = new Button
         {
             Text = "Spin",
@@ -55,6 +60,12 @@ public class MainForm : Form
         StartTimers();
     }
 
+    private int[] SpinReel(int length)
+    {
+        selectedIndices = new int[length];
+        return selectedIndices.Select(_ => random.Next(0, length)).ToArray();
+    }
+
     private void Timer_Tick(object? sender, EventArgs e)
     {
         var homePath = Environment.GetEnvironmentVariable("USERPROFILE");
@@ -67,13 +78,12 @@ public class MainForm : Form
         this.Controls.Clear(); // Clear previous images except the button
         this.Controls.Add(restartButton);
 
-        var selectedImages = imagePaths.OrderBy(x => random.Next()).Take(3).ToArray();
+        selectedIndices = SpinReel(3);
 
-        for (int i = 0; i < selectedImages.Length; i++)
+        for (int i = 0; i < selectedIndices.Length; i++)
         {
-            var imagePath = selectedImages[i];
+            var imagePath = imagePaths[selectedIndices[i]];
             var png = Path.Combine(homePath, "Projects\\2024\\rockyourslotsoff\\NETSlot\\Reel-Images", imagePath);
-            Console.WriteLine(png);
             try
             {
                 PictureBox pictureBox = new PictureBox
@@ -89,11 +99,11 @@ public class MainForm : Form
             }
             catch (FileNotFoundException)
             {
-                Console.WriteLine($"File not found: {png}");
+                Debug.WriteLine($"File not found: {png}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading image: {ex.Message}");
+                Debug.WriteLine($"Error loading image: {ex.Message}");
             }
         }
     }
@@ -102,6 +112,7 @@ public class MainForm : Form
     {
         timer.Stop();
         durationTimer.Stop();
+        if (selectedIndices.Distinct().Count() == 3) { Console.WriteLine("You win big!"); } else if (selectedIndices.Distinct().Count() == 2) { Console.WriteLine("You win small."); } else { Console.WriteLine("You lose :("); }
     }
 
     private void RestartButton_Click(object? sender, EventArgs e)
