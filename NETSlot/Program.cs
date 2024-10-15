@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,11 @@ public class MainForm : Form
     private System.Windows.Forms.Timer durationTimer;
     private Random random;
     private Button restartButton;
+    private Label creditsLabel;
+    private Label resultLabel;
+
+    private int[] selectedIndices;
+    private int credits;
 
     public MainForm()
     {
@@ -40,19 +46,39 @@ public class MainForm : Form
         durationTimer.Interval = 2000; // 2 seconds
         durationTimer.Tick += DurationTimer_Tick;
 
+        selectedIndices = new int[imagePaths.Length]; // Initialize selectedIndices
+
+        credits = 10; // Initialize credits
+
+        creditsLabel = new Label
+        {
+            Text = $"Credits: {credits}",
+            Location = new Point(10, 10),
+            AutoSize = true
+        };
+        this.Controls.Add(creditsLabel);
+
+        resultLabel = new Label
+        {
+            Text = "",
+            Location = new Point(10, 40),
+            AutoSize = true
+        };
+        this.Controls.Add(resultLabel);
+
         restartButton = new Button
         {
-            Text = "Spin",
-            Location = new Point(400 - 50, 300),
-            Width = 100,
-            Height = 30
+            Text = "Restart",
+            Location = new Point(10, 70)
         };
         restartButton.Click += RestartButton_Click;
-
         this.Controls.Add(restartButton);
+    }
 
-        // Start the timers initially
-        StartTimers();
+    private int[] SpinReel(int length)
+    {
+        selectedIndices = new int[length];
+        return selectedIndices.Select(_ => random.Next(0, length)).ToArray();
     }
 
     private void Timer_Tick(object? sender, EventArgs e)
@@ -64,16 +90,17 @@ public class MainForm : Form
         }
 
         Console.WriteLine("Reading files...");
-        this.Controls.Clear(); // Clear previous images except the button
+        this.Controls.Clear(); // Clear previous images except the button and label
         this.Controls.Add(restartButton);
+        this.Controls.Add(creditsLabel);
+        this.Controls.Add(resultLabel);
 
-        var selectedImages = imagePaths.OrderBy(x => random.Next()).Take(3).ToArray();
+        selectedIndices = SpinReel(3);
 
-        for (int i = 0; i < selectedImages.Length; i++)
+        for (int i = 0; i < selectedIndices.Length; i++)
         {
-            var imagePath = selectedImages[i];
+            var imagePath = imagePaths[selectedIndices[i]];
             var png = Path.Combine(homePath, "Projects\\2024\\rockyourslotsoff\\NETSlot\\Reel-Images", imagePath);
-            Console.WriteLine(png);
             try
             {
                 PictureBox pictureBox = new PictureBox
@@ -89,11 +116,11 @@ public class MainForm : Form
             }
             catch (FileNotFoundException)
             {
-                Console.WriteLine($"File not found: {png}");
+                Debug.WriteLine($"File not found: {png}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading image: {ex.Message}");
+                Debug.WriteLine($"Error loading image: {ex.Message}");
             }
         }
     }
@@ -102,6 +129,26 @@ public class MainForm : Form
     {
         timer.Stop();
         durationTimer.Stop();
+        var n = selectedIndices.Distinct().Count();
+        Console.WriteLine($"n = {n}, selectedIndices = {string.Join(", ", selectedIndices)}");
+        switch (n)
+        {
+            case 1:
+                Console.WriteLine("You win big!");
+                credits += 10;
+                resultLabel.Text = "You win big!";
+                break;
+            case 2:
+                Console.WriteLine("Push.");
+                resultLabel.Text = "Push.";
+                break;
+            case 3:
+                Console.WriteLine("You lose :(");
+                credits -= 1;
+                resultLabel.Text = "You lose :(";
+                break;
+        }
+        creditsLabel.Text = $"Credits: {credits}";
     }
 
     private void RestartButton_Click(object? sender, EventArgs e)
