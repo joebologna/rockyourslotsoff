@@ -80,7 +80,8 @@ func main() {
 
 		if char == 's' {
 			if credits <= 0 {
-				fmt.Println("Insufficient credits! Please cash in from the bank.")
+				fmt.Println("\n" + red + "Insufficient credits! Please cash in from the bank." + reset)
+				fmt.Println() // Output a carriage return and newline
 			} else {
 				// Clear the screen
 				fmt.Print("\033[H\033[2J")
@@ -102,14 +103,14 @@ func main() {
 					credits--
 					fmt.Println("You lose!")
 				}
-				fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+				fmt.Printf("\nWins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 			}
 		} else if char == 'c' {
 			// Cash out credits to bank
 			bank += credits
 			credits = 0
-			fmt.Println("Cashed out!")
-			fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+			fmt.Println("\nCashed out!")
+			fmt.Printf("\nWins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 		} else if char == 'i' {
 			// Cash in from bank to credits
 			if bank > 0 {
@@ -119,11 +120,11 @@ func main() {
 				}
 				bank -= amount
 				credits += amount
-				fmt.Printf("Cashed in %d credits!\n", amount)
+				fmt.Printf("\nCashed in %d credits!\n", amount)
 			} else {
-				fmt.Println("Bank is empty!")
+				fmt.Println("\nBank is empty!")
 			}
-			fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+			fmt.Printf("\nWins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 		} else if char == 'q' {
 			break
 		}
