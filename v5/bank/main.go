@@ -2,11 +2,21 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
 	"log"
 	"math"
+	"strconv"
 
 	"github.com/dgraph-io/badger/v3"
+	"gofr.dev/pkg/gofr"
 )
+
+type Bank struct {
+	Id      int     `json:"id"`
+	Balance float32 `json:"balance"`
+}
+
+var db *badger.DB
 
 func main() {
 	// Open a BadgerDB database with logging disabled
@@ -29,6 +39,33 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println("Balance:", balance)
+
+	a := gofr.New()
+
+	err = a.AddRESTHandlers(&Bank{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	a.Run()
+}
+
+func (b *Bank) Get(c *gofr.Context) (interface{}, error) {
+	return getBalance(db)
+}
+
+func (b *Bank) Update(c *gofr.Context) (interface{}, error) {
+	bal := c.Param("balance")
+	if bal == "" {
+		return nil, errors.New("balance is required")
+	}
+	balance, err := strconv.ParseFloat(bal, 32)
+	if err != nil {
+		return nil, err
+	}
+	if err = updateBalance(db, float32(balance)); err != nil {
+		return nil, err
+	}
+	return balance, nil
 }
 
 func updateBalance(db *badger.DB, balance float32) (err error) {
