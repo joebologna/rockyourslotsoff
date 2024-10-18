@@ -37,6 +37,9 @@ func main() {
 	// Initialize Gin
 	r := gin.Default()
 
+	// Serve the HTML file
+	r.StaticFile("/", "./index.html")
+
 	// Define routes
 	r.GET("/balance", getBalanceHandler)
 	r.POST("/balance", updateBalanceHandler)
