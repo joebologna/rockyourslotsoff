@@ -71,6 +71,7 @@
 
         function updateBalance() {
             const balance = document.getElementById('balanceInput').value;
+            document.getElementById('balance').innerText = 'Balance: $' + balance;
             fetch('/balance', {
                 method: 'POST',
                 headers: {
@@ -80,9 +81,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.message) {
-                    fetchBalance();
-                } else {
+                if (!data.message) {
                     alert(data.error);
                 }
             });
