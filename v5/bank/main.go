@@ -2,15 +2,18 @@ package main
 
 import (
 	"encoding/binary"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
 )
 
 var db *badger.DB
+var balanceChan = make(chan int)
 
 func main() {
 	var err error
@@ -37,6 +40,7 @@ func main() {
 	// Define routes
 	r.GET("/balance", getBalanceHandler)
 	r.POST("/balance", updateBalanceHandler)
+	r.GET("/sse", sseHandler)
 
 	// Start the server
 	if err := r.Run("127.0.0.1:9000"); err != nil {
@@ -87,5 +91,24 @@ func updateBalanceHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Send updated balance to SSE clients
+	balanceChan <- balance
+
 	c.JSON(http.StatusOK, gin.H{"message": "Balance updated successfully"})
+}
+
+func sseHandler(c *gin.Context) {
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case balance := <-balanceChan:
+			sse.Encode(w, sse.Event{
+				Event: "balance",
+				Data:  balance,
+			})
+		case <-c.Request.Context().Done():
+			return false
+		}
+		return true
+	})
 }

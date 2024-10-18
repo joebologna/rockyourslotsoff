@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/eiannone/keyboard"
+	"github.com/r3labs/sse"
 )
 
 func main() {
@@ -52,7 +54,7 @@ func main() {
 	// Function to display the boxes with random words
 	displayBoxes := func(spin bool) (string, string, string) {
 		if spin {
-			// rand.Seed(time.Now().UnixNano())
+			rand.Seed(time.Now().UnixNano())
 			word1 = words[rand.Intn(len(words))]
 			word2 = words[rand.Intn(len(words))]
 			word3 = words[rand.Intn(len(words))]
@@ -73,7 +75,7 @@ func main() {
 	// Clear the screen
 	fmt.Print("\033[H\033[2J")
 	fmt.Println()
-	word1, word2, word3 = displayBoxes(true)
+	displayBoxes(true)
 	fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 
 	// Initialize the keyboard
@@ -82,6 +84,9 @@ func main() {
 		return
 	}
 	defer keyboard.Close()
+
+	// Start listening for SSE updates in a separate goroutine
+	go listenForSSEUpdates()
 
 	for {
 		fmt.Print("Enter 's' to spin, 'c' to cash out, 'i' to cash in, '?' to refresh, or 'q' to quit: ")
@@ -93,7 +98,7 @@ func main() {
 
 		if char == 's' {
 			if credits <= 0 {
-				fmt.Println("\n" + red + "Insufficient credits! Please cash in from the bank." + reset)
+				fmt.Println(red + "Insufficient credits! Please cash in from the bank." + reset)
 				fmt.Println() // Output a carriage return and newline
 			} else {
 				// Clear the screen
@@ -192,22 +197,24 @@ func updateBankBalance(balance int) error {
 	return nil
 }
 
-// Helper function to find the maximum of three integers
-func max(a, b, c int) int {
-	if a > b {
-		if a > c {
-			return a
-		}
-		return c
-	}
-	if b > c {
-		return b
-	}
-	return c
-}
-
 // Helper function to center text within a given width
 func centerText(text string, width int) string {
 	padding := (width - len(text)) / 2
 	return strings.Repeat(" ", padding) + text + strings.Repeat(" ", width-len(text)-padding)
+}
+
+// Helper function to listen for SSE updates
+func listenForSSEUpdates() {
+	client := sse.NewClient("http://localhost:9000/sse")
+
+	client.Subscribe("messages", func(msg *sse.Event) {
+		if string(msg.Event) == "balance" {
+			var balance int
+			if err := json.Unmarshal(msg.Data, &balance); err != nil {
+				log.Fatalf("Failed to unmarshal balance: %v", err)
+			}
+			fmt.Print("\033[H\033[2J") // Clear the screen
+			fmt.Printf("Updated Balance: %d\n", balance)
+		}
+	})
 }
