@@ -7,8 +7,7 @@ import (
 	"strconv"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 var db *badger.DB
@@ -30,17 +29,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Initialize Echo
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	gin.SetMode(gin.ReleaseMode)
+
+	// Initialize Gin
+	r := gin.Default()
 
 	// Define routes
-	e.GET("/balance", getBalanceHandler)
-	e.POST("/balance", updateBalanceHandler)
+	r.GET("/balance", getBalanceHandler)
+	r.POST("/balance", updateBalanceHandler)
 
 	// Start the server
-	e.Logger.Fatal(e.Start("127.0.0.1:9000"))
+	if err := r.Run("127.0.0.1:9000"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func updateBalance(db *badger.DB, balance int) error {
@@ -66,22 +67,25 @@ func getBalance(db *badger.DB) (int, error) {
 	return balance, err
 }
 
-func getBalanceHandler(c echo.Context) error {
+func getBalanceHandler(c *gin.Context) {
 	balance, err := getBalance(db)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]int{"balance": balance})
+	c.JSON(http.StatusOK, gin.H{"balance": balance})
 }
 
-func updateBalanceHandler(c echo.Context) error {
-	balanceStr := c.FormValue("balance")
+func updateBalanceHandler(c *gin.Context) {
+	balanceStr := c.PostForm("balance")
 	balance, err := strconv.Atoi(balanceStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid balance value"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid balance value"})
+		return
 	}
 	if err = updateBalance(db, balance); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]string{"message": "Balance updated successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Balance updated successfully"})
 }
