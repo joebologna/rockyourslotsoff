@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -36,7 +40,12 @@ func main() {
 	bigWins := 0
 	losses := 0
 	credits := 0
-	bank := 100
+
+	// Fetch the initial bank balance from the HTTP endpoint
+	bank, err := fetchBankBalance()
+	if err != nil {
+		log.Fatalf("Failed to fetch bank balance: %v", err)
+	}
 
 	// Function to display the boxes with random words
 	displayBoxes := func() (string, string, string) {
@@ -80,7 +89,7 @@ func main() {
 
 		if char == 's' {
 			if credits <= 0 {
-				fmt.Println("\n" + red + "Insufficient credits! Please cash in from the bank." + reset)
+				fmt.Println(red + "Insufficient credits! Please cash in from the bank." + reset)
 				fmt.Println() // Output a carriage return and newline
 			} else {
 				// Clear the screen
@@ -103,14 +112,21 @@ func main() {
 					credits--
 					fmt.Println("You lose!")
 				}
-				fmt.Printf("\nWins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+				fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 			}
 		} else if char == 'c' {
 			// Cash out credits to bank
 			bank += credits
 			credits = 0
-			fmt.Println("\nCashed out!")
-			fmt.Printf("\nWins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+			fmt.Println("Cashed out!")
+
+			// Update the bank balance via HTTP POST request
+			err := updateBankBalance(bank)
+			if err != nil {
+				fmt.Println("Failed to update bank balance:", err)
+			}
+
+			fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 		} else if char == 'i' {
 			// Cash in from bank to credits
 			if bank > 0 {
@@ -120,16 +136,50 @@ func main() {
 				}
 				bank -= amount
 				credits += amount
-				fmt.Printf("\nCashed in %d credits!\n", amount)
+				fmt.Printf("Cashed in %d credits!\n", amount)
 			} else {
-				fmt.Println("\nBank is empty!")
+				fmt.Println("Bank is empty!")
 			}
-			fmt.Printf("\nWins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+			fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
 		} else if char == 'q' {
 			break
 		}
 		fmt.Println() // Output a carriage return and newline
 	}
+}
+
+// Helper function to fetch the bank balance from the HTTP endpoint
+func fetchBankBalance() (int, error) {
+	resp, err := http.Get("http://localhost:9000/balance")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Balance int `json:"balance"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return 0, err
+	}
+	return result.Balance, nil
+}
+
+// Helper function to update the bank balance via HTTP POST request
+func updateBankBalance(balance int) error {
+	data := url.Values{}
+	data.Set("balance", fmt.Sprintf("%d", balance))
+
+	resp, err := http.PostForm("http://localhost:9000/balance", data)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to update balance, status code: %d", resp.StatusCode)
+	}
+	return nil
 }
 
 // Helper function to find the maximum of three integers
