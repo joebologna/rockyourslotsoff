@@ -49,23 +49,62 @@
         .input-group button:hover {
             background-color: #0056b3;
         }
+        .reels {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .reel {
+            font-size: 2em;
+            margin: 0 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100px;
+            text-align: center;
+        }
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="balance" id="balance">Balance: $0</div>
+        <div class="reels">
+            <div class="reel" id="reel1">-</div>
+            <div class="reel" id="reel2">-</div>
+            <div class="reel" id="reel3">-</div>
+        </div>
         <div class="input-group">
             <input type="number" id="balanceInput" placeholder="Enter balance">
             <button onclick="updateBalance()">Update Balance</button>
         </div>
+        <div class="input-group">
+            <button onclick="spin()">Spin</button>
+            <button onclick="cashIn()">Cash In</button>
+            <button onclick="cashOut()">Cash Out</button>
+            <button onclick="refresh()">Refresh</button>
+        </div>
+        <div class="results" id="results"></div>
+        <div class="error" id="error"></div>
     </div>
 
     <script>
+        let wins = 0;
+        let bigWins = 0;
+        let losses = 0;
+        let credits = 0;
+        let bank = 0;
+        const words = ["apple", "orange", "pear"];
+
         function fetchBalance() {
             fetch('/balance')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('balance').innerText = 'Balance: $' + data.balance;
+                    bank = data.balance;
+                    document.getElementById('balance').innerText = 'Balance: $' + bank;
                 });
         }
 
@@ -82,9 +121,95 @@
             .then(response => response.json())
             .then(data => {
                 if (!data.message) {
-                    alert(data.error);
+                    document.getElementById('error').innerText = data.error;
+                } else {
+                    document.getElementById('error').innerText = '';
                 }
             });
+        }
+
+        function spin() {
+            if (credits <= 0) {
+                document.getElementById('error').innerText = "Insufficient credits! Please cash in from the bank.";
+                return;
+            }
+
+            const word1 = words[Math.floor(Math.random() * words.length)];
+            const word2 = words[Math.floor(Math.random() * words.length)];
+            const word3 = words[Math.floor(Math.random() * words.length)];
+
+            document.getElementById('reel1').innerText = word1;
+            document.getElementById('reel2').innerText = word2;
+            document.getElementById('reel3').innerText = word3;
+
+            let result = `Results: ${word1}, ${word2}, ${word3}<br>`;
+
+            if (word1 === word2 && word2 === word3) {
+                wins++;
+                bigWins++;
+                credits += 10;
+                result += "You win 10 credits!";
+            } else if (word1 === word2 || word2 === word3 || word1 === word3) {
+                wins++;
+                credits++;
+                result += "You win 1 credit!";
+            } else {
+                losses++;
+                credits--;
+                result += "You lose!";
+            }
+
+            document.getElementById('results').innerHTML = result;
+            updateDisplay();
+        }
+
+        function cashIn() {
+            if (bank > 0) {
+                let amount = 10;
+                if (bank < amount) {
+                    amount = bank;
+                }
+                bank -= amount;
+                credits += amount;
+                updateBalanceOnServer();
+                updateDisplay();
+            } else {
+                document.getElementById('error').innerText = "Bank is empty!";
+            }
+        }
+
+        function cashOut() {
+            bank += credits;
+            credits = 0;
+            updateBalanceOnServer();
+            updateDisplay();
+        }
+
+        function refresh() {
+            updateDisplay();
+        }
+
+        function updateBalanceOnServer() {
+            fetch('/balance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'balance=' + bank,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.message) {
+                    document.getElementById('error').innerText = data.error;
+                } else {
+                    document.getElementById('error').innerText = '';
+                }
+            });
+        }
+
+        function updateDisplay() {
+            document.getElementById('balance').innerText = 'Balance: $' + bank;
+            document.getElementById('results').innerHTML += `<br>Wins: ${wins}, Big Wins: ${bigWins}, Losses: ${losses}, Credits: ${credits}, Bank: ${bank}`;
         }
 
         // Fetch initial balance
