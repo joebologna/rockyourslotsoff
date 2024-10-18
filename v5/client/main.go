@@ -14,6 +14,14 @@ import (
 	"github.com/r3labs/sse"
 )
 
+var (
+	wins    int
+	bigWins int
+	losses  int
+	credits int
+	bank    int
+)
+
 func main() {
 	// ANSI escape codes for colors
 	const (
@@ -37,13 +45,14 @@ func main() {
 	bottom := blue + "└" + strings.Repeat("─", maxLength+2) + "┘" + reset
 
 	// Initialize win and loss counters
-	wins := 0
-	bigWins := 0
-	losses := 0
-	credits := 0
+	wins = 0
+	bigWins = 0
+	losses = 0
+	credits = 0
 
 	// Fetch the initial bank balance from the HTTP endpoint
-	bank, err := fetchBankBalance()
+	var err error
+	bank, err = fetchBankBalance()
 	if err != nil {
 		log.Fatalf("Failed to fetch bank balance: %v", err)
 	}
@@ -86,7 +95,7 @@ func main() {
 	defer keyboard.Close()
 
 	// Start listening for SSE updates in a separate goroutine
-	go listenForSSEUpdates()
+	go listenForSSEUpdates(displayBoxes)
 
 	for {
 		fmt.Print("Enter 's' to spin, 'c' to cash out, 'i' to cash in, '?' to refresh, or 'q' to quit: ")
@@ -204,17 +213,35 @@ func centerText(text string, width int) string {
 }
 
 // Helper function to listen for SSE updates
-func listenForSSEUpdates() {
+func listenForSSEUpdates(displayBoxes func(bool) (string, string, string)) {
 	client := sse.NewClient("http://localhost:9000/sse")
 
 	client.Subscribe("messages", func(msg *sse.Event) {
 		if string(msg.Event) == "balance" {
-			var balance int
-			if err := json.Unmarshal(msg.Data, &balance); err != nil {
+			var newBank int
+			if err := json.Unmarshal(msg.Data, &newBank); err != nil {
 				log.Fatalf("Failed to unmarshal balance: %v", err)
 			}
+			bank = newBank             // Update the bank balance
 			fmt.Print("\033[H\033[2J") // Clear the screen
-			fmt.Printf("Updated Balance: %d\n", balance)
+			fmt.Println()
+			displayBoxes(false)
+			fmt.Printf("Wins: %d, Big Wins: %d, Losses: %d, Credits: %d, Bank: %d\n", wins, bigWins, losses, credits, bank)
+			fmt.Print("Enter 's' to spin, 'c' to cash out, 'i' to cash in, '?' to refresh, or 'q' to quit: ")
 		}
 	})
+}
+
+// Helper function to find the maximum of three integers
+func max(a, b, c int) int {
+	if a > b {
+		if a > c {
+			return a
+		}
+		return c
+	}
+	if b > c {
+		return b
+	}
+	return c
 }
